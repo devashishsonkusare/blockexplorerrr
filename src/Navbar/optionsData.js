@@ -1,5 +1,5 @@
 const optionsData = [
-    { value: "5", symbol: "ETH", name: "Ethereum Georli", image: "https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg", rpc: process.env.REACT_APP_EthereumGoerliUrl },
+    { value: "5", symbol: "ETH", name: "Ethereum Goerli", image: "https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg", rpc: process.env.REACT_APP_EthereumGoerliUrl },
     { value: "1", symbol: "ETH", name: "Ethereum Mainnet", image: "https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg", rpc: process.env.REACT_APP_EthereumMainnetUrl },
     { value: "11155111", symbol: "ETH", name: "Ethereum Sepolia", image: "https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg", rpc: process.env.REACT_APP_EthereumGoerliSepoliaUrl },
     { value: "80001", symbol: "MATIC", name: "Polygon Mumbai", image: "https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg", rpc: process.env.REACT_APP_PolygonMumbaiUrl },

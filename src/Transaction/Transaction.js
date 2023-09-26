@@ -3,9 +3,16 @@ import "./Transaction.css"
 import { ethers } from "ethers" 
 import optionsData from '../Navbar/optionsData';
 import { Blocks } from 'react-loader-spinner';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import Typography from '@material-ui/core/Typography';
+
 const Transaction = ({ selectedOption }) => {
     const [loader, setLoader] = useState(false);
-
+    const [show, setShow] = useState(false);
     var defaultTransactionDetails = {
         txHash: "",
         status: "",
@@ -18,40 +25,101 @@ const Transaction = ({ selectedOption }) => {
         gasLimit: ""
     };
     const [txHash, setTxHash] = useState("");
-    const [transactionDetails, setTransactionDetails] = useState(defaultTransactionDetails);
+    const [transactionDetails, setTransactionDetails] = useState(null);
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
-
+    useEffect(() => {
+        // Reset input and balance when selectedOption changes
+        setShow(false)
+        setTxHash()
+    }, [selectedOption]);
     const getTransactionDetails = async () => {
         setLoader(true)
         try {
-            const krypcoreWeb3SDK = require("@krypc/krypcore-web3-sdk").default;
-            const Web3Engine = await krypcoreWeb3SDK.initialize({
-                authorization: "bbd060cb-c12a-496a-90df-91b7080056a1",
-                dappId: "DEV_DEMO_DSON_2_20230822"
-            });
             const provider = new ethers.providers.JsonRpcProvider(selectedOptionObject.rpc);
-            const txDetails = await provider.getTransaction(txHash);
+            // Fetch the transaction receipt first
             const txReceipt = await provider.getTransactionReceipt(txHash);
-            const txStatus = txReceipt.status === 1 ? "success" : "failed";
 
+            // Check if the transaction receipt exists before proceeding
+            if (!txReceipt) {
+                toast("Wrong Transaction Id", {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    mixBlendMode: "lighten",
+                    theme: "dark",
+                });
+                setTransactionDetails(null);
+                setLoader(false);
+                return; // Exit the function if there's no transaction receipt
+            }
+
+            const txDetails = await provider.getTransaction(txHash);
+            const block = await provider.getBlock(txReceipt.blockNumber);
+            const dateFormat = new Date(block.timestamp * 1000);
+            const cost = txDetails.gasPrice.mul(txReceipt.gasUsed);
+            const txStatus = txReceipt.status === 1 ? "success" : "failed";
+            
             const details = {
                 txHash: txReceipt.transactionHash,
                 status: txStatus,
                 blockNo: txReceipt.blockNumber,
+                blockHash: txReceipt.blockHash,
+                transactionTimestamp: formatAMPM(dateFormat),
                 confirmations: txReceipt.confirmations,
                 from: txReceipt.from,
                 to: txReceipt.to,
                 value: ethers.utils.formatEther(txDetails.value),
-                gasUsed: ethers.utils.formatUnits(txReceipt.gasUsed, 'gwei'),
-                gasLimit: ethers.utils.formatUnits(txDetails.gasLimit, 'gwei')
+                gasUsed: parseInt(txReceipt.gasUsed),
+                gasLimit: parseInt(txDetails.gasLimit),
+                transactionType: txReceipt.type,
+                transactionCost: ethers.utils.formatEther(cost),
+                nonceUsed: txDetails.nonce,
+                position: txReceipt.transactionIndex,
+                inputData: txDetails.data,
+                logsData: txReceipt.logs.map(log => ({
+                    address: log.address,
+                    topics: log.topics,
+                    data: log.data,
+                    logIndex: log.logIndex
+                }))
             };
-
+            setShow(true);
             setTransactionDetails(details);
         } catch (error) {
             console.error("Error fetching transaction details:", error);
+            toast("Wrong Transaction Id", {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                mixBlendMode: "lighten",
+                theme: "dark",
+            });
             setTransactionDetails(null);
         }
-        setLoader(false)
+        setLoader(false);
+    }
+
+    function formatAMPM(dateObj) {
+        const isoString = dateObj.toISOString();
+        const year = isoString.slice(0, 4);
+        const month = isoString.slice(5, 7);
+        const day = isoString.slice(8, 10);
+        const time = isoString.slice(11, 19);
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthStr = months[parseInt(month, 10) - 1];
+        const hour = parseInt(time.slice(0, 2), 10);
+        const hour12 = hour > 12 ? hour - 12 : hour;
+        const amPm = hour >= 12 ? "PM" : "AM";
+        const time12h = `${String(hour12).padStart(2, '0')}${time.slice(2, 8)} ${amPm}`;
+        return `${monthStr}-${day}-${year} ${time12h} +UTC`;
     }
 
     return (
@@ -69,7 +137,7 @@ const Transaction = ({ selectedOption }) => {
                 </div>
             )}
         <div style={{ padding: '150px 100px 0px' }}>
-            <h1 style={{ color: 'rgb(241, 241, 241)', textAlign: 'center', fontSize: '36px',letterSpacing:"5px" }}>Search For Transaction...</h1>
+            <h1 style={{ color: 'rgb(241, 241, 241)', textAlign: 'center', fontSize: '36px',letterSpacing:"5px" }}>Search For Transaction Hash</h1>
             <form>
                 <div className="searchBox">
 
@@ -122,6 +190,7 @@ const Transaction = ({ selectedOption }) => {
 
            
         </div>
+            {show  && <div>
             <h3 style={{ textDecoration: "underline", color: "white", marginLeft: "5%", marginTop: "5%", letterSpacing: "5px", textUnderlineOffset: "8px" }}>Showing details of Transaction Hash</h3>
             <div className="style-0">
 
@@ -145,7 +214,7 @@ const Transaction = ({ selectedOption }) => {
                                 {transactionDetails.status === "success" ? (
                                     <div className="btn success" data-btn="success">Success</div>
                                 ) : (
-                                    <div className="btn error" data-btn="error">Wait</div>
+                                    <div className="btn error" data-btn="error">Failure</div>
                                 )}
                             </span>
                         </div>
@@ -161,6 +230,26 @@ const Transaction = ({ selectedOption }) => {
                     </div>
 
                 </div>
+                    <div className="style-1">
+                        <div className="style-2">
+                            Block Hash:
+                        </div>
+                        <div className="style-4">
+                            <span className="style-5">
+                                <span className="style-6">{transactionDetails.blockHash}</span> </span>
+                        </div>
+
+                    </div>
+                    <div className="style-1">
+                        <div className="style-2">
+                            Transaction Timestamp :
+                        </div>
+                        <div className="style-4">
+                            <span className="style-5">
+                                <span className="style-6">{transactionDetails.transactionTimestamp}</span> </span>
+                        </div>
+
+                    </div>
                 <div className="style-1">
                     <div className="style-2">
                         Block Confirmations:
@@ -221,9 +310,96 @@ const Transaction = ({ selectedOption }) => {
                     </div>
 
                 </div>
+                    <div className="style-1">
+                        <div className="style-2">
+                            Transaction Type:
+                        </div>
+                        <div className="style-4">
+                            <span className="style-5">
+                                <span className="style-6">{transactionDetails.transactionType}</span> </span>
+                        </div>
+
+                    </div>
+                    <div className="style-1">
+                        <div className="style-2">
+                            Transaction Cost (in ether):
+                        </div>
+                        <div className="style-4">
+                            <span className="style-5">
+                                <span className="style-6">{transactionDetails.transactionCost}</span> </span>
+                        </div>
+
+                    </div>
+                    <div className="style-1">
+                        <div className="style-2">
+                            Nonce Used:
+                        </div>
+                        <div className="style-4">
+                            <span className="style-5">
+                                <span className="style-6">{transactionDetails.nonceUsed}</span> </span>
+                        </div>
+
+                    </div>
+                    <div className="style-1">
+                        <div className="style-2">
+                            Position in transaction Index:
+                        </div>
+                        <div className="style-4">
+                            <span className="style-5">
+                                <span className="style-6">{transactionDetails.position}</span> </span>
+                        </div>
+
+                    </div>
+                    <div className="style-1">
+                        <div className="style-2">
+                            Input Data:
+                        </div>
+                        <div className="style-4">
+                            <textarea
+                                readOnly
+                                spellCheck="false"
+                                className="form-control bg-light text-secondary text-monospace p-3"
+                                rows="4"
+                                id="inputdata"
+                                value={transactionDetails.inputData}
+                                style={{width:"100%",color:"white"}}
+                            ></textarea>                                
+                        </div>
+
+                    </div>
+                    <div className="style-1">
+                        <div className="style-2">
+                            Logs Data:
+                        </div>
+                        <div className="style-4">
+                            {transactionDetails.logsData.map((log, index) => (
+                                <Accordion key={index}>
+                                    <AccordionSummary
+                                        
+                                        aria-controls={`panel-${index}-content`}
+                                        id={`panel-${index}-header`}
+                                    >
+                                        <Typography>Log {index + 1}</Typography>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        <div>
+                                            <div>Address: {log.address}</div>
+                                            <div>Topics: {log.topics.join(', ')}</div>
+                                            <div>Data: {log.data}</div>
+                                            <div>Log Index: {log.logIndex}</div>
+                                        </div>
+                                    </AccordionDetails>
+                                </Accordion>
+                            ))}
+                        </div>
+                    </div>
+                
+
 
             </div>
+        </div>}
 
+            <ToastContainer style={{backgroundColor:"transparent"}}/>
         </>
     );
 }

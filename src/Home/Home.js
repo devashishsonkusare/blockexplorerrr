@@ -2,60 +2,114 @@ import React,{useState,useEffect}from 'react'
 import "./Home.css"
 import optionsData from '../Navbar/optionsData'; // Import the optionsData
 import { ethers } from "ethers" 
-import { Blocks } from 'react-loader-spinner';
+import { Blocks, ProgressBar} from 'react-loader-spinner';
 const Home = ({ selectedOption }) => {
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
     const selectedOptionName = selectedOptionObject ? selectedOptionObject.name : 'Unknown';
     const [blockDetails, setBlockDetails] = useState([]); // Added state for blockDetails
     const [loader, setLoader] = useState(false);
-
+    const [loading, setLoading] = useState(true);
+    const [loadingGasPrice, setLoadingGasPrice] = useState(true)
     const [blockNumber, setBlockNumber] = useState(null);
     const [gasPrice, setGasPrice] = useState(0);
+    const [fetchblock, setFetchBlock] = useState(0);
     var Web3Engine;
     
     var provider;
    
     useEffect(() => {
+        setLoader(true);
+        setLoading(true)
+        setLoadingGasPrice(true)
+        setBlockDetails([]);
+        setFetchBlock(0)
+        setBlockNumber();
+        setGasPrice(0);
+        
+        let isMounted = true; // Flag to track component mount state
+
         const connect = async () => {
-            setLoader(true)
-            const krypcoreWeb3SDK = require("@krypc/krypcore-web3-sdk").default;
-            const Web3Engine = await krypcoreWeb3SDK.initialize({
-                authorization: "bbd060cb-c12a-496a-90df-91b7080056a1",
-                dappId: "DEV_DEMO_DSON_2_20230822"
-            });
+            try {
+                // const krypcoreWeb3SDK = require("@krypc/krypcore-web3-sdk").default;
+                // const Web3Engine = await krypcoreWeb3SDK.initialize({
+                //     authorization: "21584306-c214-48f3-95b3-bf57846717dc",
+                //     dappId: "DEV_DEMO_DSON_22_20230919"
+                // });
 
-            const provider = new ethers.providers.JsonRpcProvider(selectedOptionObject.rpc);
-            const blockNum = await provider.getBlockNumber();
-            setBlockNumber(blockNum);
+                const provider = new ethers.providers.JsonRpcProvider(selectedOptionObject.rpc);
+                const blockNum = await provider.getBlockNumber();
+                setBlockNumber(blockNum);
+                setLoading(false);
 
-            const gasPrice = await provider.getGasPrice();
-            const gasPriceInGwei = gasPrice / 1e9;
-            setGasPrice(gasPriceInGwei);
+                const gasPrice = await provider.getGasPrice();
+                const gasPriceInGwei = gasPrice / 1e9;
+                setGasPrice(gasPriceInGwei);
+                setLoadingGasPrice(false)
+                const blockDetailsArray = [];
+                for (let i = 0; i < 10; i++) {
+                    
+                    if (!isMounted) {
+                        
+                        setFetchBlock(0)
+                        break; // Stop the loop if component is unmounted
 
-            const blockDetailsArray = [];
-            for (var i = 0; i < 10; i++) {
-                const blockNo = blockNum - i;
-                const cBno = "0x" + blockNo.toString(16);
+                    }
+                    const blockNo = blockNum - i;
+                    const cBno = "0x" + blockNo.toString(16);
 
-                const blockData = await provider.getBlock(cBno);
-                console.log("looping", i)
+                    const blockData = await provider.getBlock(cBno);
+                    const dateFormat = new Date(blockData.timestamp * 1000)
+                    setFetchBlock(i+1)
 
-                blockDetailsArray.push({
-                    blockNo: blockNo,
-                    hash: blockData.hash,
-                    transactions: blockData.transactions.length,
-                    gasUsed: blockData.gasUsed.toString(),
-                    timestamp: new Date(blockData.timestamp * 1000).toLocaleString()
-                });
-                setBlockDetails(blockDetailsArray);
-                setLoader(false)
+                    if (isMounted) {
+                        
+                        setBlockDetails(prevBlockDetails => [
+                            ...prevBlockDetails,
+                            {
+                                blockNo: blockNo,
+                                hash: blockData.hash,
+                                transactions: blockData.transactions.length,
+                                gasUsed: blockData.gasUsed.toString(),
+                                timestamp: formatAMPM(dateFormat)
+                            }
+                        ]);
+                    }
+                    if(i==9){
+                        setLoader(false);
+                    }
+                    // 
+                }
 
+                
+
+                
+            } catch (error) {
+                console.error("Error:", error);
             }
-            console.log("Setting block details...");
+            
         };
 
         connect();
-    }, [selectedOptionObject.rpc]);
+        
+        return () => {
+            isMounted = false; // Set flag to false when component unmounts
+        };
+    }, [selectedOptionObject]);
+
+    function formatAMPM(dateObj) {
+        const isoString = dateObj.toISOString();
+        const year = isoString.slice(0, 4);
+        const month = isoString.slice(5, 7);
+        const day = isoString.slice(8, 10);
+        const time = isoString.slice(11, 19);
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthStr = months[parseInt(month, 10) - 1];
+        const hour = parseInt(time.slice(0, 2), 10);
+        const hour12 = hour > 12 ? hour - 12 : hour;
+        const amPm = hour >= 12 ? "PM" : "AM";
+        const time12h = `${String(hour12).padStart(2, '0')}${time.slice(2, 8)} ${amPm}`;
+        return `${monthStr}-${day}-${year} ${time12h} +UTC`;
+    }
 
     // useEffect(() => {
     //     console.log("blockDetails state:", blockDetails);
@@ -71,64 +125,131 @@ const Home = ({ selectedOption }) => {
     // })
   return (
     
-      <div className="container" style={{ background: "linear-gradient(to bottom, #222, #111)" }}>
-          {loader && (
-              <div className="overlay">
-                  <Blocks
-                      visible={loader}
-                      height="80"
-                      width="80"
-                      ariaLabel="blocks-loading"
-                      wrapperStyle={{}}
-                      wrapperClass="blocks-wrapper"
-                  />
-              </div>
-          )}
-  <div className="content">
-    <div className='homemain' style={{color:"white", width:"50%"}}>
-        <h3 style={{marginBottom:"7vh"}}>
-                  Viewing Block Explorer For <span style={{ textDecoration: "underline", color:"#4FC3A1" }}>{selectedOptionName}</span>
-        </h3>
-        <div style={{display:"flex", backgroundColor:"transparent",gap:"20vh"}}>
-                  <h4>
-                      Current Block Number: {blockNumber}
-                  </h4>
-                  <h4>
-                      Current Gas Price: {gasPrice} Gwei
-                  </h4>
+    <div className="container" style={{ background: "linear-gradient(to bottom, #222, #111)" }}>
+    <div className="content">
+        <div className='homemain' style={{color:"white",display:"flex"}}>
+                  <div class="glassmorphic-card">
+                      <h3 class="card-title" style={{ backgroundColor: "transparent", color: "#4FC3A1"}}>
+                          Active Network 
+                      </h3>
+                      <h3 style={{backgroundColor:"transparent"}}>{selectedOptionName}</h3>
+                  </div>
+                  <div class="glassmorphic-card">
+                      <h3 class="card-title" style={{ backgroundColor: "transparent", color: "#4FC3A1" }}>
+                          Current Block Number
+                      </h3>
+                      {loading ? (
+                        <div style={{backgroundColor:"transparent", height:"2.5vh"}}>
+                              <Blocks
+                                  height="30"
+                                  width="30"
+                                  ariaLabel="blocks-loading"
+                                  wrapperStyle={{
+                                      mixBlendMode: "lighten",
+                                      position: "relative",
+
+                                      transform: "translate(-20%, -30%)",
+                                  }}
+                                  wrapperClass="blocks-wrapper"
+
+                              />
+                          </div>
+                      ) : (
+                          <h3 style={{ backgroundColor: "transparent" }}>{blockNumber}</h3>
+                      )}
+                  </div>
+                  <div class="glassmorphic-card">
+                      <h3 class="card-title" style={{ backgroundColor: "transparent", color: "#4FC3A1" }}>
+                          Current Gas Price
+                      </h3>
+                      {loadingGasPrice ? (
+                          <div style={{ backgroundColor: "transparent", height: "2.5vh" }}>
+                              <Blocks
+                                  height="30"
+                                  width="30"
+                                  ariaLabel="blocks-loading"
+                                  wrapperStyle={{
+                                      mixBlendMode: "lighten",
+                                      position: "relative",
+                                    
+                                      transform: "translate(-20%, -30%)", }}
+                                  wrapperClass="blocks-wrapper"
+
+                              />
+                              
+                          </div>
+                      ) : (
+                          <h3 style={{ backgroundColor: "transparent" }}>{gasPrice} Gwei</h3>
+                      )}
+                  </div>
+                  {/* <div class="glassmorphic-card">
+                      <h3 style={{ backgroundColor: "transparent", color: "#4FC3A1" }}>
+                          Current Block Number
+                          
+                      </h3>
+                      <h3 style={{ backgroundColor: "transparent", color: "white" }}>{blockNumber}</h3> 
+                  </div>
+                  <div class="glassmorphic-card">
+                      <h4 style={{ backgroundColor: "transparent", color: "#4FC3A1" }}>
+                          Current Gas Price
+                      </h4>
+                      <h3 style={{ backgroundColor: "transparent", color: "white" }}>{gasPrice} Gwei</h3> 
+
+                  </div> */}
+           
         </div>
-          
+        <div>
+                 <div style={{color:"white"}}>
+                      <h3 style={{ color: "white", marginLeft: "5%", fontSize: "1.5rem", marginBottom: "1%", fontFamily: "Helvetica", marginRight: "1%" }}>Latest Blocks</h3>{fetchblock != 10 &&<div style={{display:"flex",marginLeft:"3.8%"}}> <h4 style={{ margin: "0.4% 0.4% 0% 1.5%", }}>Fetching Block:</h4><h4 style={{ margin:"0.4% 0% 1.5%",}}>{fetchblock}/10</h4><Blocks
+                          visible={loader}
+                          height="30"
+                          width="30"
+                          ariaLabel="blocks-loading"
+                          wrapperStyle={{marginLeft:"0.7%"}}
+                          wrapperClass="blocks-wrapper"
+                    
+                      />
+                      </div>}
+                 </div> 
+            <div className="table-wrapper">
+                      
+                <table className="fl-table">
+                         
+                    <thead>
+                        <tr>
+                            <th>Block #</th>
+                            <th>Hash</th>
+                            <th>Number Of Transaction</th>
+                            <th>Gas Used</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {blockDetails.map((block, index) => (
+                            <tr key={index}>
+                                <td>{block.blockNo}</td>
+                                <td>{block.hash}</td>
+                                <td>{block.transactions}</td>
+                                <td>{block.gasUsed}</td>
+                                <td>{block.timestamp}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                        
+                </table>
+                      {loader && (
+                          
+                              <div className="overlays">
+                                  
+                              </div>
+                         
+                      )}
+            </div>
+        </div>
     </div>
-    <div>
-        <h3 style={{textDecoration:"underline", color:"white", marginLeft:"5%"}}>Recent Blocks</h3>
-              <div className="table-wrapper">
-                  <table className="fl-table">
-                      <thead>
-                          <tr>
-                              <th>Block #</th>
-                              <th>Hash</th>
-                              <th>Number Of Transaction</th>
-                              <th>Gas Used</th>
-                              <th>Timestamp</th>
-                          </tr>
-                      </thead>
-                          <tbody>
-                              {blockDetails.map((block, index) => (
-                                  <tr key={index}>
-                                      <td>{block.blockNo}</td>
-                                      <td>{block.hash}</td>
-                                      <td>{block.transactions}</td>
-                                      <td>{block.gasUsed}</td>
-                                      <td>{block.timestamp}</td>
-                                  </tr>
-                              ))}
-                          </tbody>
-                          </table>
-                      </div>
-        </div >
-  </div>
     <div className="body"></div>
 </div>
+
     
   )
 }

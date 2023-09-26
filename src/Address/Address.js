@@ -10,7 +10,8 @@ const Address = ({ selectedOption }) => {
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
     const [inputAddress , setInputAddress] = useState();
     const [balance, setBalance] = useState(0);
-    const [txncount, setTxnCount] = useState(0);
+    const [txncount, setTxnCount] = useState(0)
+    const [show, setShow] = useState(false);
     async function handleInput(e){
         setInputAddress(e.target.value)
     }
@@ -25,11 +26,11 @@ const Address = ({ selectedOption }) => {
 
     const getCoinBalanceOfUser = async (inputAddress) => {
         setLoader(true)
-        const krypcoreWeb3SDK = require("@krypc/krypcore-web3-sdk").default;
-        const Web3Engine = await krypcoreWeb3SDK.initialize({
-            authorization: "bbd060cb-c12a-496a-90df-91b7080056a1",
-            dappId: "DEV_DEMO_DSON_2_20230822"
-        });
+        // const krypcoreWeb3SDK = require("@krypc/krypcore-web3-sdk").default;
+        // const Web3Engine = await krypcoreWeb3SDK.initialize({
+        //     authorization: "21584306-c214-48f3-95b3-bf57846717dc",
+        //     dappId: "DEV_DEMO_DSON_22_20230919"
+        // });
         const provider = new ethers.providers.JsonRpcProvider(selectedOptionObject.rpc);
         const balance = await provider.getBalance(inputAddress);
         const balanceInEther = ethers.utils.formatEther(balance);
@@ -39,6 +40,7 @@ const Address = ({ selectedOption }) => {
         setTxnCount(txCount)
         console.log(`Balance of ${inputAddress}: ${balanceInEther} Matic`);
         setLoader(false)
+        setShow(true)
     }
 
 
@@ -57,7 +59,7 @@ const Address = ({ selectedOption }) => {
                   />
               </div>
           )}
-          <div style={{ padding: '150px 100px 0px' }}>     <h1 style={{ color: 'rgb(241, 241, 241)', textAlign: 'center', fontSize: '36px', letterSpacing: "5px" }}>Search For Address...</h1>
+          <div style={{ padding: '150px 100px 0px' }}>     <h1 style={{ color: 'rgb(241, 241, 241)', textAlign: 'center', fontSize: '36px', letterSpacing: "5px" }}>Search For Address</h1>
           <form>
               <div className="searchBox">
 
@@ -101,6 +103,7 @@ const Address = ({ selectedOption }) => {
 
 
       </div>
+          {show && <div>
           <h3 style={{ textDecoration: "underline", color: "white", marginLeft: "5%", marginTop: "5%", letterSpacing: "5px", textUnderlineOffset: "8px" }}>Showing details of Address</h3>
           <div className="style-0">
 
@@ -126,7 +129,8 @@ const Address = ({ selectedOption }) => {
 
               </div>
               </div>
-         
+          </div>
+}         
       </>
      
   )

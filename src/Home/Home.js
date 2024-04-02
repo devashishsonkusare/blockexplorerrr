@@ -181,7 +181,7 @@ const Home = ({ selectedOption }) => {
                     <thead>
                         <tr>
                             <th>Block #</th>
-                            <th>Hash</th>
+                            <th>Block Hash</th>
                             <th>Number Of Transaction</th>
                             <th>Gas Used</th>
                             <th>Timestamp</th>

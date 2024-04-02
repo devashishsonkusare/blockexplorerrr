@@ -17,7 +17,6 @@ const Address = ({ selectedOption }) => {
     }
 
     useEffect(() => {
-        // Reset input and balance when selectedOption changes
         setInputAddress("");
         setBalance(0);
         setTxnCount(0)
@@ -26,16 +25,10 @@ const Address = ({ selectedOption }) => {
 
     const getCoinBalanceOfUser = async (inputAddress) => {
         setLoader(true)
-        // const krypcoreWeb3SDK = require("@krypc/krypcore-web3-sdk").default;
-        // const Web3Engine = await krypcoreWeb3SDK.initialize({
-        //     authorization: "21584306-c214-48f3-95b3-bf57846717dc",
-        //     dappId: "DEV_DEMO_DSON_22_20230919"
-        // });
         const provider = new ethers.providers.JsonRpcProvider(selectedOptionObject.rpc);
         const balance = await provider.getBalance(inputAddress);
         const balanceInEther = ethers.utils.formatEther(balance);
         setBalance(balanceInEther)
-
         const txCount = await provider.getTransactionCount(inputAddress);
         setTxnCount(txCount)
         console.log(`Balance of ${inputAddress}: ${balanceInEther} Matic`);

@@ -10,51 +10,43 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 
+
+const toastOptions = {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "dark"
+};
+
+
 const Transaction = ({ selectedOption }) => {
     const [loader, setLoader] = useState(false);
     const [show, setShow] = useState(false);
-    var defaultTransactionDetails = {
-        txHash: "",
-        status: "",
-        blockNo: "",
-        confirmations: "",
-        from: "",
-        to: "",
-        value: "",
-        gasUsed: "",
-        gasLimit: ""
-    };
     const [txHash, setTxHash] = useState("");
     const [transactionDetails, setTransactionDetails] = useState(null);
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
+    
     useEffect(() => {
-        // Reset input and balance when selectedOption changes
         setShow(false)
         setTxHash()
     }, [selectedOption]);
+
+
     const getTransactionDetails = async () => {
         setLoader(true)
         try {
             const provider = new ethers.providers.JsonRpcProvider(selectedOptionObject.rpc);
-            // Fetch the transaction receipt first
             const txReceipt = await provider.getTransactionReceipt(txHash);
 
-            // Check if the transaction receipt exists before proceeding
             if (!txReceipt) {
-                toast("Wrong Transaction Id", {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    mixBlendMode: "lighten",
-                    theme: "dark",
-                });
+                toast("Wrong Transaction Id", { ...toastOptions, mixBlendMode: "lighten" });
                 setTransactionDetails(null);
                 setLoader(false);
-                return; // Exit the function if there's no transaction receipt
+                return; 
             }
 
             const txDetails = await provider.getTransaction(txHash);
@@ -91,22 +83,13 @@ const Transaction = ({ selectedOption }) => {
             setTransactionDetails(details);
         } catch (error) {
             console.error("Error fetching transaction details:", error);
-            toast("Wrong Transaction Id", {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                mixBlendMode: "lighten",
-                theme: "dark",
-            });
+            toast("Error fetching transaction details", { ...toastOptions, mixBlendMode: "lighten" });
             setTransactionDetails(null);
         }
         setLoader(false);
     }
 
+    // Func to change the format of the date
     function formatAMPM(dateObj) {
         const isoString = dateObj.toISOString();
         const year = isoString.slice(0, 4);

@@ -6,15 +6,14 @@ import optionsData from './optionsData'; // Import the optionsData
 const Navbar = ({ setSelectedOption }) => {
 
     const handleOptionChange = (event) => {
-        setSelectedOption(event.target.value); // Set the selected option in the parent component state
+        setSelectedOption(event.target.value); 
     };
     return (
         <>
             <div className="App">
                 <header style={{ borderBottom: '0.8px solid rgb(7, 17, 32)', background: 'rgb(2, 13, 28)',height:"3.5rem", padding: '10px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Link to="/"><h2 style={{ display: 'flex', alignItems: 'center', color: 'whitesmoke', marginRight: '1rem',textDecoration: "none" }}>
-                        <img src="https://web3-dev-ui-sandbox-test.krypcore.com/favicon-16x16.png" alt="" style={{ height: '2rem', width: '2rem', marginRight: '0.5rem'}} />
-                        Krypcore Explorer
+                        <img src="https://krypcore.com/static/media/logo.a0594b25566df65afa92.avif" alt="" style={{ height: '2rem', width: '9rem', marginRight: '0.5rem'}} />
                         
                     </h2>
                 </Link>

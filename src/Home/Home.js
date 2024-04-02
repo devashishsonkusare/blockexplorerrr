@@ -1,22 +1,19 @@
 import React,{useState,useEffect}from 'react'
 import "./Home.css"
-import optionsData from '../Navbar/optionsData'; // Import the optionsData
+import optionsData from '../Navbar/optionsData'; 
 import { ethers } from "ethers" 
-import { Blocks, ProgressBar} from 'react-loader-spinner';
+import { Blocks} from 'react-loader-spinner';
 const Home = ({ selectedOption }) => {
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
     const selectedOptionName = selectedOptionObject ? selectedOptionObject.name : 'Unknown';
-    const [blockDetails, setBlockDetails] = useState([]); // Added state for blockDetails
+    const [blockDetails, setBlockDetails] = useState([]); 
     const [loader, setLoader] = useState(false);
     const [loading, setLoading] = useState(true);
     const [loadingGasPrice, setLoadingGasPrice] = useState(true)
     const [blockNumber, setBlockNumber] = useState(null);
     const [gasPrice, setGasPrice] = useState(0);
     const [fetchblock, setFetchBlock] = useState(0);
-    var Web3Engine;
-    
-    var provider;
-   
+
     useEffect(() => {
         setLoader(true);
         setLoading(true)
@@ -26,32 +23,24 @@ const Home = ({ selectedOption }) => {
         setBlockNumber();
         setGasPrice(0);
         
-        let isMounted = true; // Flag to track component mount state
+        let isMounted = true; 
 
         const connect = async () => {
             try {
-                // const krypcoreWeb3SDK = require("@krypc/krypcore-web3-sdk").default;
-                // const Web3Engine = await krypcoreWeb3SDK.initialize({
-                //     authorization: "21584306-c214-48f3-95b3-bf57846717dc",
-                //     dappId: "DEV_DEMO_DSON_22_20230919"
-                // });
-
                 const provider = new ethers.providers.JsonRpcProvider(selectedOptionObject.rpc);
                 const blockNum = await provider.getBlockNumber();
                 setBlockNumber(blockNum);
                 setLoading(false);
-
                 const gasPrice = await provider.getGasPrice();
                 const gasPriceInGwei = gasPrice / 1e9;
                 setGasPrice(gasPriceInGwei);
                 setLoadingGasPrice(false)
-                const blockDetailsArray = [];
                 for (let i = 0; i < 10; i++) {
                     
                     if (!isMounted) {
                         
                         setFetchBlock(0)
-                        break; // Stop the loop if component is unmounted
+                        break; 
 
                     }
                     const blockNo = blockNum - i;
@@ -74,10 +63,10 @@ const Home = ({ selectedOption }) => {
                             }
                         ]);
                     }
-                    if(i==9){
+                    if(i===9){
                         setLoader(false);
                     }
-                    // 
+                    
                 }
 
                 
@@ -92,7 +81,7 @@ const Home = ({ selectedOption }) => {
         connect();
         
         return () => {
-            isMounted = false; // Set flag to false when component unmounts
+            isMounted = false; 
         };
     }, [selectedOptionObject]);
 
@@ -110,19 +99,6 @@ const Home = ({ selectedOption }) => {
         const time12h = `${String(hour12).padStart(2, '0')}${time.slice(2, 8)} ${amPm}`;
         return `${monthStr}-${day}-${year} ${time12h} +UTC`;
     }
-
-    // useEffect(() => {
-    //     console.log("blockDetails state:", blockDetails);
-
-
-    // }, [blockDetails]);
-
-    // connect().then(() => {
-    //     setProvider().then(() => {
-    //         getCurrentBlockNo();
-    //         getCurrentGasPrice();
-    //     })
-    // })
   return (
     
     <div className="container" style={{ background: "linear-gradient(to bottom, #222, #111)" }}>
@@ -182,25 +158,12 @@ const Home = ({ selectedOption }) => {
                           <h3 style={{ backgroundColor: "transparent" }}>{gasPrice} Gwei</h3>
                       )}
                   </div>
-                  {/* <div class="glassmorphic-card">
-                      <h3 style={{ backgroundColor: "transparent", color: "#4FC3A1" }}>
-                          Current Block Number
-                          
-                      </h3>
-                      <h3 style={{ backgroundColor: "transparent", color: "white" }}>{blockNumber}</h3> 
-                  </div>
-                  <div class="glassmorphic-card">
-                      <h4 style={{ backgroundColor: "transparent", color: "#4FC3A1" }}>
-                          Current Gas Price
-                      </h4>
-                      <h3 style={{ backgroundColor: "transparent", color: "white" }}>{gasPrice} Gwei</h3> 
-
-                  </div> */}
+              
            
         </div>
         <div>
                  <div style={{color:"white"}}>
-                      <h3 style={{ color: "white", marginLeft: "5%", fontSize: "1.5rem", marginBottom: "1%", fontFamily: "Helvetica", marginRight: "1%" }}>Latest Blocks</h3>{fetchblock != 10 &&<div style={{display:"flex",marginLeft:"3.8%"}}> <h4 style={{ margin: "0.4% 0.4% 0% 1.5%", }}>Fetching Block:</h4><h4 style={{ margin:"0.4% 0% 1.5%",}}>{fetchblock}/10</h4><Blocks
+                      <h3 style={{ color: "white", marginLeft: "5%", fontSize: "1.5rem", marginBottom: "1%", fontFamily: "Helvetica", marginRight: "1%" }}>Latest Blocks</h3>{fetchblock !== 10 &&<div style={{display:"flex",marginLeft:"3.8%"}}> <h4 style={{ margin: "0.4% 0.4% 0% 1.5%", }}>Fetching Block:</h4><h4 style={{ margin:"0.4% 0% 1.5%",}}>{fetchblock}/10</h4><Blocks
                           visible={loader}
                           height="30"
                           width="30"

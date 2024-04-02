@@ -7,28 +7,26 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Accordion, AccordionItem } from '@szhsin/react-accordion';
 
-const Transaction = ({ selectedOption }) => {
-    const [modalIsOpen, setModalIsOpen] = useState(false);
+const toastOptions = {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "dark"
+};
 
+
+const Transaction = ({ selectedOption }) => {
     const [loader, setLoader] = useState(false);
     const [show, setShow] = useState(false);
-    var defaultBlockDetails = {
-        blockHash: "",
-        parentHash: "",
-        timestamp: "",
-        gasLimit: "",
-        gasUsed: "",
-        noOfTransactions: "",
-        listOfTransactionHash: "",
-        difficulty: "",
-        baseFeePerGas: ""
-    };
     const [block, setBlock] = useState("");
     const [blockDetails, setBlockDetails] = useState(null);
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
     
     useEffect(() => {
-        // Reset input and balance when selectedOption changes
         setShow(false)
         setBlock()
     }, [selectedOption]);
@@ -36,17 +34,7 @@ const Transaction = ({ selectedOption }) => {
         setLoader(true);
         try {
             if (!block) {
-                // Handle the case where Block is empty or not provided
-                toast("Block is required", {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "dark",
-                });
+                toast("Block is required", { ...toastOptions });
                 return;
             }
 
@@ -54,24 +42,12 @@ const Transaction = ({ selectedOption }) => {
             const blockData = await provider.getBlock(block);
 
             if (!blockData) {
-                // Handle the case where no block data is found for the given Block
-                toast("Wrong Transaction Id", {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "dark",
-                });
+                toast("Wrong Transaction Id", { ...toastOptions });
                 setBlockDetails(null);
             } else {
-                // Successfully retrieved block data
                 
                 const listOfTransactionHash = blockData.transactions.join('\n');
                 const baseFeePerGasWei = blockData.baseFeePerGas.toString();
-                const baseFeePerGasGwei = (blockData.baseFeePerGas / 1000000000).toFixed(9);
                 const dateFormat = new Date(blockData.timestamp * 1000);
                 const details = {
                     blockHeight: blockData.number,
@@ -90,17 +66,7 @@ const Transaction = ({ selectedOption }) => {
             }
         } catch (error) {
             console.error("Error fetching transaction details:", error);
-            toast("Error fetching transaction details", {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                mixBlendMode: "lighten",
-                theme: "dark",
-            });
+            toast("Error fetching transaction details", { ...toastOptions, mixBlendMode: "lighten" });
             setBlockDetails(null);
         } finally {
             setLoader(false);
@@ -129,7 +95,7 @@ const Transaction = ({ selectedOption }) => {
             setBlock(value);
         }
         // Check if the input is a valid numeric block number
-        else if (!isNaN(value) && parseInt(value) == value) {
+        else if (!isNaN(value) && parseInt(value) === value) {
             const numericValue = parseInt(value);
             setBlock(numericValue);
         } else {

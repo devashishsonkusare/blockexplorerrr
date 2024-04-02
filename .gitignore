@@ -7,7 +7,7 @@
 
 
 # Ignore .env file
-.env
+
 
 # testing
 /coverage

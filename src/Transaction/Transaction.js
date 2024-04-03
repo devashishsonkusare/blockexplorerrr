@@ -5,10 +5,7 @@ import optionsData from '../Navbar/optionsData';
 import { Blocks } from 'react-loader-spinner';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import Typography from '@material-ui/core/Typography';
+
 
 
 const toastOptions = {
@@ -29,7 +26,12 @@ const Transaction = ({ selectedOption }) => {
     const [txHash, setTxHash] = useState("");
     const [transactionDetails, setTransactionDetails] = useState(null);
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
+    const [isOpen, setIsOpen] = useState(null);
     
+    const toggleAccordion = (index) => {
+        setIsOpen((prevIndex) => (prevIndex === index ? null : index));
+    };
+
     useEffect(() => {
         setShow(false)
         setTxHash()
@@ -356,24 +358,22 @@ const Transaction = ({ selectedOption }) => {
                         </div>
                         <div className="style-4">
                             {transactionDetails.logsData.map((log, index) => (
-                                <Accordion key={index}>
-                                    <AccordionSummary
-                                        
-                                        aria-controls={`panel-${index}-content`}
-                                        id={`panel-${index}-header`}
-                                    >
-                                        <Typography>Log {index + 1}</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <div>
+                                <div key={index} className="accordion">
+                                    <div className="accordion-header" onClick={() => toggleAccordion(index)}>
+                                        <div>Log {index + 1}</div>
+                                    </div>
+                                    {isOpen === index && (
+                                        <div className="accordion-content">
                                             <div>Address: {log.address}</div>
                                             <div>Topics: {log.topics.join(', ')}</div>
                                             <div>Data: {log.data}</div>
                                             <div>Log Index: {log.logIndex}</div>
                                         </div>
-                                    </AccordionDetails>
-                                </Accordion>
+                                    )}
+                                </div>
                             ))}
+
+
                         </div>
                     </div>
                 

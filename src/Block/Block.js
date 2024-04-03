@@ -5,7 +5,6 @@ import optionsData from '../Navbar/optionsData';
 import { Blocks } from 'react-loader-spinner';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Accordion, AccordionItem } from '@szhsin/react-accordion';
 
 const toastOptions = {
     position: "top-right",
@@ -25,12 +24,18 @@ const Transaction = ({ selectedOption }) => {
     const [block, setBlock] = useState("");
     const [blockDetails, setBlockDetails] = useState(null);
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
-    
+    const [isOpen, setIsOpen] = useState(null);
+
+    // Function to toggle accordion
+    const toggleAccordion = (index) => {
+        setIsOpen((prevIndex) => (prevIndex === index ? null : index));
+    };
     useEffect(() => {
         setShow(false)
         setBlock()
     }, [selectedOption]);
     const getTransactionDetails = async () => {
+        console.log(block)
         setLoader(true);
         try {
             if (!block) {
@@ -45,7 +50,7 @@ const Transaction = ({ selectedOption }) => {
                 toast("Wrong Transaction Id", { ...toastOptions });
                 setBlockDetails(null);
             } else {
-                
+
                 const listOfTransactionHash = blockData.transactions.join('\n');
                 const baseFeePerGasWei = blockData.baseFeePerGas.toString();
                 const dateFormat = new Date(blockData.timestamp * 1000);
@@ -88,6 +93,7 @@ const Transaction = ({ selectedOption }) => {
     }
     const handleInputChange = (e) => {
         e.preventDefault();
+        console.log(e.target.value)
         const value = e.target.value;
 
         // Check if the input is a valid hexadecimal block hash (starts with '0x')
@@ -95,8 +101,11 @@ const Transaction = ({ selectedOption }) => {
             setBlock(value);
         }
         // Check if the input is a valid numeric block number
-        else if (!isNaN(value) && parseInt(value) === value) {
+        else if (!isNaN(value) && parseInt(value) == value) {
+            console.log(value)
             const numericValue = parseInt(value);
+            console.log(numericValue);
+
             setBlock(numericValue);
         } else {
             // Handle the case where the input is neither a valid block number nor a block hash
@@ -247,26 +256,32 @@ const Transaction = ({ selectedOption }) => {
                         </div>
 
                     </div>
-                    
+
                     <div className="style-1">
                         <div className="style-2">
                             List Of Transaction Hash:
                         </div>
-                        <div className="style-4" style={{ color:"white"}}>
-                            <Accordion transition transitionTimeout={250}>
-                                <AccordionItem header="Show transactions">
-                                    <ul className="transaction-list">
-                                        {blockDetails.listOfTransactionHash.split('\n').map((txHash, index) => (
-                                            <li key={index} className="transaction-item">
-                                                <span className="style-5">
-                                                    <span className="style-6">{txHash}</span>
-                                                </span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </AccordionItem>
-                            </Accordion>
+                        <div className="style-4" style={{ color: "white" }}>
+                            <div className="accordion">
+                                <div className="accordion-header" onClick={toggleAccordion}>
+                                    Show transactions
+                                </div>
+                                {isOpen && (
+                                    <div className="accordion-content">
+                                        <ul className="transaction-list">
+                                            {blockDetails.listOfTransactionHash.split('\n').map((txHash, index) => (
+                                                <li key={index} className="transaction-item">
+                                                    <span className="style-5">
+                                                        <span className="style-6">{txHash}</span>
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
 
                     </div>
                     <div className="style-1">

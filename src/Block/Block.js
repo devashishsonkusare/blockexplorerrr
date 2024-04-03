@@ -122,7 +122,7 @@ const Transaction = ({ selectedOption }) => {
         if (/^0x[a-fA-F0-9]+$/.test(value)) {
             setBlock(value);
             setSearch(true)
-            window.history.pushState({}, document.title, '/search-transaction');
+            window.history.pushState({}, document.title, '/search-block');
 
         }
         // Check if the input is a valid numeric block number
@@ -132,7 +132,7 @@ const Transaction = ({ selectedOption }) => {
             console.log(numericValue);
             setSearch(true)
             setBlock(numericValue);
-            window.history.pushState({}, document.title, '/search-transaction');
+            window.history.pushState({}, document.title, '/search-block');
 
         } else {
             // Handle the case where the input is neither a valid block number nor a block hash

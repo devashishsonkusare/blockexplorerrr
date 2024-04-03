@@ -3,6 +3,7 @@ import "./Home.css"
 import optionsData from '../Navbar/optionsData'; 
 import { ethers } from "ethers" 
 import { Blocks} from 'react-loader-spinner';
+import { Link } from 'react-router-dom';
 const Home = ({ selectedOption }) => {
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
     const selectedOptionName = selectedOptionObject ? selectedOptionObject.name : 'Unknown';
@@ -191,7 +192,7 @@ const Home = ({ selectedOption }) => {
                         {blockDetails.map((block, index) => (
                             <tr key={index}>
                                 <td>{block.blockNo}</td>
-                                <td>{block.hash}</td>
+                                <td><Link to={`/search-block/${block.hash}`} style={{color:"white", textDecoration:"none"}}>{block.hash}</Link></td>
                                 <td>{block.transactions}</td>
                                 <td>{block.gasUsed}</td>
                                 <td>{block.timestamp}</td>

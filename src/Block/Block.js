@@ -3,7 +3,9 @@ import "./Block.css"
 import { ethers } from "ethers"
 import optionsData from '../Navbar/optionsData';
 import { Blocks } from 'react-loader-spinner';
+import { useParams } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
 const toastOptions = {
@@ -25,32 +27,51 @@ const Transaction = ({ selectedOption }) => {
     const [blockDetails, setBlockDetails] = useState(null);
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
     const [isOpen, setIsOpen] = useState(null);
-
+    const { blockHash } = useParams();
+    const [search, setSearch] = useState(false);
     // Function to toggle accordion
     const toggleAccordion = (index) => {
         setIsOpen((prevIndex) => (prevIndex === index ? null : index));
     };
+
+    useEffect(() => {
+        if (blockHash) {
+            console.log("blick",blockHash)
+            getTransactionDetails();
+        }
+    }, [blockHash]);
+
     useEffect(() => {
         setShow(false)
         setBlock()
     }, [selectedOption]);
     const getTransactionDetails = async () => {
-        console.log(block)
+       
         setLoader(true);
         try {
-            if (!block) {
+            let blockToFetch = block; // Initialize blockToFetch with the current value of block state
+            console.log("block to fetc",block)
+            if (block) {
+                setSearch(true)
+            }
+            console.log("value of block",search)
+            // If blockHash is available in the URL parameter, use it instead
+            if (blockHash && !search) {
+                blockToFetch = blockHash;
+            }
+            console.log(blockToFetch)
+            if (!blockToFetch) {
                 toast("Block is required", { ...toastOptions });
                 return;
             }
 
             const provider = new ethers.providers.JsonRpcProvider(selectedOptionObject.rpc);
-            const blockData = await provider.getBlock(block);
+            const blockData = await provider.getBlock(blockToFetch);
 
             if (!blockData) {
                 toast("Wrong Transaction Id", { ...toastOptions });
                 setBlockDetails(null);
             } else {
-
                 const listOfTransactionHash = blockData.transactions.join('\n');
                 const baseFeePerGasWei = blockData.baseFeePerGas.toString();
                 const dateFormat = new Date(blockData.timestamp * 1000);
@@ -77,6 +98,7 @@ const Transaction = ({ selectedOption }) => {
             setLoader(false);
         }
     };
+
     function formatAMPM(dateObj) {
         const isoString = dateObj.toISOString();
         const year = isoString.slice(0, 4);
@@ -94,19 +116,24 @@ const Transaction = ({ selectedOption }) => {
     const handleInputChange = (e) => {
         e.preventDefault();
         console.log(e.target.value)
-        const value = e.target.value;
-
+        const value = e.target.value.trim();
+        
         // Check if the input is a valid hexadecimal block hash (starts with '0x')
         if (/^0x[a-fA-F0-9]+$/.test(value)) {
             setBlock(value);
+            setSearch(true)
+            window.history.pushState({}, document.title, '/search-transaction');
+
         }
         // Check if the input is a valid numeric block number
         else if (!isNaN(value) && parseInt(value) == value) {
             console.log(value)
             const numericValue = parseInt(value);
             console.log(numericValue);
-
+            setSearch(true)
             setBlock(numericValue);
+            window.history.pushState({}, document.title, '/search-transaction');
+
         } else {
             // Handle the case where the input is neither a valid block number nor a block hash
             console.log("Invalid input: not a valid block number or block hash");
@@ -272,7 +299,7 @@ const Transaction = ({ selectedOption }) => {
                                             {blockDetails.listOfTransactionHash.split('\n').map((txHash, index) => (
                                                 <li key={index} className="transaction-item">
                                                     <span className="style-5">
-                                                        <span className="style-6">{txHash}</span>
+                                                        <span className="style-6"><Link to={`/search-transaction/${txHash}`} style={{ color: "white", textDecoration: "none" }}>{txHash}</Link></span>
                                                     </span>
                                                 </li>
                                             ))}

@@ -4,6 +4,7 @@ import { ethers } from "ethers"
 import optionsData from '../Navbar/optionsData';
 import { Blocks } from 'react-loader-spinner';
 import { ToastContainer, toast } from 'react-toastify';
+import { useParams } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -27,7 +28,8 @@ const Transaction = ({ selectedOption }) => {
     const [transactionDetails, setTransactionDetails] = useState(null);
     const selectedOptionObject = optionsData.find(option => option.value === selectedOption);
     const [isOpen, setIsOpen] = useState(null);
-    
+    const [search, setSearch] = useState(false);
+    const { txnhash } = useParams()
     const toggleAccordion = (index) => {
         setIsOpen((prevIndex) => (prevIndex === index ? null : index));
     };
@@ -36,13 +38,28 @@ const Transaction = ({ selectedOption }) => {
         setShow(false)
         setTxHash()
     }, [selectedOption]);
-
+    useEffect(() => {
+        console.log(txnhash)
+        if(txnhash && !search){
+            getTransactionDetails()
+        }
+    }, [txnhash]);
 
     const getTransactionDetails = async () => {
+        console.log("txhaaa",txHash)
+        console.log("s",search)
+        let txnToFetch = txHash
+        if (txnhash && !search){
+            txnToFetch = txnhash 
+            console.log(txnToFetch)
+        }
+        console.log("txjns fetch ",  txnToFetch)
         setLoader(true)
         try {
             const provider = new ethers.providers.JsonRpcProvider(selectedOptionObject.rpc);
-            const txReceipt = await provider.getTransactionReceipt(txHash);
+            console.log("fetch ", txnToFetch)
+            const txReceipt = await provider.getTransactionReceipt(txnToFetch);
+            console.log("txReceipt", txReceipt)
 
             if (!txReceipt) {
                 toast("Wrong Transaction Id", { ...toastOptions, mixBlendMode: "lighten" });
@@ -51,7 +68,7 @@ const Transaction = ({ selectedOption }) => {
                 return; 
             }
 
-            const txDetails = await provider.getTransaction(txHash);
+            const txDetails = await provider.getTransaction(txnToFetch);
             const block = await provider.getBlock(txReceipt.blockNumber);
             const dateFormat = new Date(block.timestamp * 1000);
             const cost = txDetails.gasPrice.mul(txReceipt.gasUsed);
@@ -133,7 +150,10 @@ const Transaction = ({ selectedOption }) => {
                             placeholder="Search Transactions"
                             onChange={(e) => {
                                 e.preventDefault(); // Prevent unintended default behavior
-                                setTxHash(e.target.value);
+                                setTxHash(e.target.value.trim());
+                                setSearch(true)
+                                window.history.pushState({}, document.title, '/search-transaction');
+
                             }}
                         />
                         <button
@@ -177,7 +197,7 @@ const Transaction = ({ selectedOption }) => {
         </div>
             {show  && <div>
             <h3 style={{ textDecoration: "underline", color: "white", marginLeft: "5%", marginTop: "5%", letterSpacing: "5px", textUnderlineOffset: "8px" }}>Showing details of Transaction Hash</h3>
-            <div className="style-0">
+            {transactionDetails && <div className="style-0">
 
                 <div className="style-1">
                     <div className="style-2">
@@ -379,7 +399,7 @@ const Transaction = ({ selectedOption }) => {
                 
 
 
-            </div>
+            </div>}
         </div>}
 
             <ToastContainer style={{backgroundColor:"transparent"}}/>

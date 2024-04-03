@@ -1,70 +1,76 @@
-# Getting Started with Create React App
+# Multi-Chain Block Explorer DApp
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Introduction
 
-## Available Scripts
+Welcome to the Multi-Chain Block Explorer DApp, powered by Krypcore Web3. This DApp allows users to explore multiple blockchain networks seamlessly, providing insights into recent blocks, transactions, addresses, and more.
 
-In the project directory, you can run:
+## About
 
-### `npm start`
+This project is part of a series dedicated to building decentralized applications (DApps) with Krypcore Web3. By leveraging Krypcore's RPC Nodes and RPC APIs, developers can create customized block explorers for various blockchain networks.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Features
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- View the recent 10 blocks processed on the chain
+- Search for a specific transaction hash to find more details
+- Lookup any address on the chain
+- Search for a specific block number or block hash to get block details
+- Get the list of transactions in a block
+- Toggle between multiple chains for exploration
 
-### `npm test`
+## Getting Started
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
 
-### `npm run build`
+- Create an account on [Krypcore Web3](https://www.krypcore.com/) to obtain the necessary RPC Endpoints for your project.
+- Ensure Node.js v12 is installed on your system.
+- Familiarize yourself with React.js.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Clone this repository:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+git clone https://github.com/krypc-code/krypcore-block-explorer.git
+```
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. Navigate to the project directory:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+cd krypcore-block-explorer
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+3. Install dependencies:
 
-## Learn More
+```bash
+npm install
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+4. Create a `.env` file based on the `.env.example` file and replace all variables with the respective endpoint URLs from your Krypcore Web3 dashboard.
 
-### Code Splitting
+### Usage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+1. Start the development server:
 
-### Analyzing the Bundle Size
+```bash
+npm start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-### Making a Progressive Web App
+2. Access the application at `localhost:3000`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### API Used
 
-### Advanced Configuration
+- `eth_getBalance`: Fetches the balance of a given address.
+- `eth_getTransactionCount`: Fetches the nonce/total transactions performed by a given address.
+- `eth_getBlock`: Gets the block details for a given block number.
+- `eth_getTransactionReceipt`: Provides information about a given transaction hash.
+- `eth_getTransaction`: Provides details regarding the transaction.
+- `eth_getBlockNumber`: Fetches the current/latest block number.
+- `eth_getGasPrice`: Fetches the current gas price.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Conclusion
 
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+We hope this guide helps you get started with creating your multi-chain block explorer with Krypcore Web3. Feel free to customize it further or add any other custom networks. Join our developer community on Discord to discuss any DApp ideas you're building!
